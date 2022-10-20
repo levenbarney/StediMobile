@@ -28,13 +28,13 @@ return(
   else{
     return(
       <View>
-        <TextInput style={StyleSheet.input}
+        <TextInput style={styles.input}
         placeholderTextColor='#4251f5'
         placeholder='Phone Number'>
         </TextInput>
         <Button
         title='Send'
-          style={StyleSheet.button}
+          style={styles.button}
           onPress={()=>{
             console.log('Button was pressed!')
           }}
