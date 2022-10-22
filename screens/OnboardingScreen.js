@@ -43,7 +43,7 @@ const OnboardingScreen = ({setFirstLaunch}) =>{
             {
               backgroundColor: '#5da9e9',
               image: <Image   style={{height: '60%', width: '90%', resizeMode:'contain', marginBottom:-200}} source={require('../image/testing.png')} />,
-              title: <Text style={{fontWeight:'bold', fontSize: 19, margin:15, textAlign:'center', color:'#A0CE4E', marginTop: -130 }}></Text>,
+              title: <Text style={{fontWeight:'bold', fontSize: 19, margin:15, textAlign:'center', color:'#ffffff', marginTop: -130 }}></Text>,
               subtitle: (
                 <View>
                 <Text style={{fontWeight:'bold', textAlign:'center', color:'#ffffff', fontSize:19, margin:12,  marginTop: -70}}>We will not share your data. Please share your phone number so we can track your balance.</Text>
