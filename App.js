@@ -1,11 +1,10 @@
 import React, { useEffect, useState, } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, AsyncStorage, TextInput} from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, AsyncStorage, TextInput, Button} from 'react-native';
 import  Navigation from './components/Navigation';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import OnboardingScreen from './screens/OnboardingScreen';
 import Home from './screens/Home';
 import { NavigationContainer } from '@react-navigation/native';
-import { Button } from 'react-native-paper';
 
 
 
@@ -16,6 +15,7 @@ const App = () =>{
   const [isFirstLaunch, setFirstLaunch] = React.useState(true);
   const[isLoggedIn, setIsLoggedIn]=React.useState(false);
   const [homeTodayScore, setHomeTodayScore] = React.useState(0);
+  const [phoneNumber, setPhoneNumber] = React.useState("");
 
    if (isFirstLaunch == true){
 return(
@@ -28,16 +28,30 @@ return(
   else{
     return(
       <View>
-        <TextInput style={styles.input}
+        <TextInput 
+        style={styles.input}
         placeholderTextColor='#4251f5'
-        placeholder='Phone Number'>
+        placeholder='Phone Number'
+        value={phoneNumber}
+        onChangeText={setPhoneNumber}
+        >
+
         </TextInput>
         <Button
-        title='Send'
+        title='Send Text'
           style={styles.button}
-          onPress={()=>{
+          onPress={async()=>{
             console.log('Button was pressed!')
-          }}
+            await fetch('https://dev.stedi.me/twofactorlogin/'+phoneNumber,
+            {
+              method:'POST',
+              headers:{
+                'content-type':'application/text'
+              }
+            }
+            )
+          }
+          }
           />
       </View>
     )
