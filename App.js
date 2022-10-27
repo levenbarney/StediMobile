@@ -16,9 +16,10 @@ const loggedInStates={
 
 const App = () =>{
   const [isFirstLaunch, setFirstLaunch] = React.useState(true);
-  const[loggedInState, setLoggedInState]=React.useState(loggedInStates.NOT_LOGGED_IN);
+  const [loggedInState, setLoggedInState]=React.useState(loggedInStates.NOT_LOGGED_IN);
   const [homeTodayScore, setHomeTodayScore] = React.useState(0);
   const [phoneNumber, setPhoneNumber] = React.useState("");
+  const [oneTimePassword, setOneTimePassword] = React.useState(null)
 
    if (isFirstLaunch == true){
 return(
@@ -36,7 +37,6 @@ return(
         value={phoneNumber}
         onChangeText={setPhoneNumber}
         >
-
         </TextInput>
         <Button
         title='Send Text'
@@ -49,18 +49,40 @@ return(
               headers:{
                 'content-type':'application/text'
               }
-            }
-            )
+            })
           setLoggedInState(loggedInStates.CODE_SENT)
           }}
           />
       </View>
-    )
-  }
+    )}
   else if(loggedInState == loggedInStates.CODE_SENT){
     return(
       <View>
-
+        <TextInput 
+        style={styles.input}
+        placeholderTextColor='#4251f5'
+        placeholder='One Time Password'
+        value={oneTimePassword}
+        onChangeText={setOneTimePassword}
+        keyboardType = 'numeric'
+        >
+        </TextInput>
+        <Button
+        title='Login'
+          style={styles.button}
+          onPress={async()=>{
+            console.log('Login Button was pressed!')
+            await fetch('https://dev.stedi.me/twofactorlogin/',
+            {
+              method:'POST',
+              headers:{
+                'content-type':'application/text'
+              }
+              body:
+            })
+          setLoggedInState(loggedInStates.CODE_SENT)
+          }}
+          />
       </View>
     )
   }
