@@ -7,25 +7,26 @@ import Home from './screens/Home';
 import { NavigationContainer } from '@react-navigation/native';
 
 
-
-
 const AppStack = createNativeStackNavigator();
+const loggedInStates={
+  NOT_LOGGED_IN: 'NOT_LOGGED_IN',
+  LOGGED_IN: 'LOGGED_IN',
+  CODE_SENT: 'CODE_SENT',
+}
 
 const App = () =>{
   const [isFirstLaunch, setFirstLaunch] = React.useState(true);
-  const[isLoggedIn, setIsLoggedIn]=React.useState(false);
+  const[loggedInState, setLoggedInState]=React.useState(loggedInStates.NOT_LOGGED_IN);
   const [homeTodayScore, setHomeTodayScore] = React.useState(0);
   const [phoneNumber, setPhoneNumber] = React.useState("");
 
    if (isFirstLaunch == true){
 return(
   <OnboardingScreen setFirstLaunch={setFirstLaunch}/>
- 
-);
-  }else if(isLoggedIn){
+)
+  }else if(loggedInState == loggedInStates.LOGGED_IN){
     return <Navigation/>
-  }
-  else{
+  }else if(loggedInState == loggedInStates.NOT_LOGGED_IN){
     return(
       <View>
         <TextInput 
@@ -50,9 +51,16 @@ return(
               }
             }
             )
-          }
-          }
+          setLoggedInState(loggedInStates.CODE_SENT)
+          }}
           />
+      </View>
+    )
+  }
+  else if(loggedInState == loggedInStates.CODE_SENT){
+    return(
+      <View>
+
       </View>
     )
   }
