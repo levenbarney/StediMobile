@@ -1,5 +1,5 @@
 import React, { useEffect, useState, } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, TextInput, Button} from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, TextInput, Button, Alert} from 'react-native';
 import  Navigation from './components/Navigation';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import OnboardingScreen from './screens/OnboardingScreen';
@@ -22,7 +22,29 @@ const App = () =>{
   const [phoneNumber, setPhoneNumber] = React.useState("");
   const [oneTimePassword, setOneTimePassword] = React.useState(null)
 
-   if (isFirstLaunch == true){
+  //NEW LINES:
+  useEffect(()=>{//code that has to run before you are shown the app screen
+    const getSessionToken = async()=>{
+    const sessionToken = await AsyncStorage.getItem('sessionToken');
+    console.log('sessionToken', sessionToken);
+    const validateResponse = await fetch('https://dev.stedi.me/validate/'+sessionToken,
+    {
+      method:'GET',
+      headers:{
+        'content-type':'application/text'
+      }
+    });
+
+    if(validateResponse.status==200){//good, non-expired token
+      const userName = await validateResponse.text();
+      await AsyncStorage.setItem('userName', userName);//saves username for later
+      setLoggedInState(loggedInStates.LOGGED_IN);//if token is bad, it skips to this line
+    }
+    }
+    getSessionToken();
+    });
+    
+   if(isFirstLaunch == true){
 return(
   <OnboardingScreen setFirstLaunch={setFirstLaunch}/>
 )
@@ -85,16 +107,19 @@ return(
               })
             });
             if(loginResponse.status==200){//200 means the password was valid
+              const sessionToken = await loginResponse.text();//NEW LINE
+              await AsyncStorage.setItem('sessionToken', sessionToken)//NEW LINE (stores in storage)
               setLoggedInState(loggedInStates.LOGGED_IN);
             } else{
+              console.log('response status', loginResponse.status);//NEW LINE
+              Alert.alert('Invalid','Invalid login information')//NEW LINE
               setLoggedInState(loggedInStates.NOT_LOGGED_IN)
             }
           }}
           />
       </View>
     )
-  }
-}
+  }};
  export default App;
 
  const styles = StyleSheet.create({
@@ -119,3 +144,4 @@ return(
     padding: 10
   }    
 })
+
