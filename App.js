@@ -5,10 +5,11 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import OnboardingScreen from './screens/OnboardingScreen';
 import Home from './screens/Home';
 import { NavigationContainer } from '@react-navigation/native';
+import { color } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
 const AppStack = createNativeStackNavigator();
+
 const loggedInStates={
   NOT_LOGGED_IN: 'NOT_LOGGED_IN',
   LOGGED_IN: 'LOGGED_IN',
@@ -17,120 +18,125 @@ const loggedInStates={
 
 const App = () =>{
   const [isFirstLaunch, setFirstLaunch] = React.useState(true);
-  const [loggedInState, setLoggedInState]=React.useState(loggedInStates.NOT_LOGGED_IN);
+  const [loggedInState,setLoggedInState] = React.useState("NOT_LOGGED_IN");
   const [homeTodayScore, setHomeTodayScore] = React.useState(0);
   const [phoneNumber, setPhoneNumber] = React.useState("");
-  const [oneTimePassword, setOneTimePassword] = React.useState(null)
+  const [passCode, setPassCode] = React.useState(null);
 
-  //NEW LINES:
-  useEffect(()=>{//code that has to run before you are shown the app screen
+  useEffect(()=>{
     const getSessionToken = async()=>{
-    const sessionToken = await AsyncStorage.getItem('sessionToken');
-    console.log('sessionToken', sessionToken);
-    const validateResponse = await fetch('https://dev.stedi.me/validate/'+sessionToken,
-    {
-      method:'GET',
-      headers:{
-        'content-type':'application/text'
-      }
-    });
+      const sessionToken = await AsyncStorage.getItem('sessionToken');
+      console.log('sessionToken', sessionToken);
+      const validateResponse = await fetch('https://dev.stedi.me/validate/'+sessionToken,
+      {
+        method: 'GET',
+        headers: {
+          'content-type': 'application/text'
+        }
+      });
+      if(validateResponse.status==200){
 
-    if(validateResponse.status==200){//good, non-expired token
-      const userName = await validateResponse.text();
-      await AsyncStorage.setItem('userName', userName);//saves username for later
-      setLoggedInState(loggedInStates.LOGGED_IN);//if token is bad, it skips to this line
-    }
+        const userName = await validateResponse.text();
+        await AsyncStorage.setItem('userName', userName);
+        setLoggedInState(loggedInStates.LOGGED_IN);
+        console.log('userName',userName)
+ 
+      }
     }
     getSessionToken();
-    });
-    
-   if(isFirstLaunch == true){
+  })
+
+
+   if (isFirstLaunch == true){
 return(
   <OnboardingScreen setFirstLaunch={setFirstLaunch}/>
-)
+ 
+);
   }else if(loggedInState == loggedInStates.LOGGED_IN){
     return <Navigation/>
-  }else if(loggedInState == loggedInStates.NOT_LOGGED_IN){
-    return(
-      <View>
-        <TextInput 
-        style={styles.input}
-        placeholderTextColor='#4251f5'
-        placeholder='Phone Number'
+  }else if (loggedInState == loggedInStates.NOT_LOGGED_IN){
+    return(<View>
+      <TextInput style={styles.input}
+      placeholderTextColor='#211F0F'
+      placeholder='Phone Number'
         value={phoneNumber}
-        onChangeText={setPhoneNumber}
-        >
-        </TextInput>
-        <Button
-        title='Send Text'
-          style={styles.button}
-          onPress={async()=>{
-            console.log('Button was pressed!')
-            await fetch('https://dev.stedi.me/twofactorlogin/'+phoneNumber,
-            {
-              method:'POST',
-              headers:{
-                'content-type':'application/text'
-              }
-            })
-          setLoggedInState(loggedInStates.CODE_SENT)
-          }}
-          />
-      </View>
-    )}
-  else if(loggedInState == loggedInStates.CODE_SENT){
-    return(
-      <View>
-        <TextInput 
-        style={styles.input}
-        placeholderTextColor='#4251f5'
-        placeholder='One Time Password'
-        value={oneTimePassword}
-        onChangeText={setOneTimePassword}
-        keyboardType = 'numeric'
-        >
-        </TextInput>
-        <Button
-        title='Login'
-          style={styles.button}
-          onPress={async()=>{
-            console.log('Login Button was pressed!')
-            const loginResponse=await fetch('https://dev.stedi.me/twofactorlogin',
-            {
-              method:'POST',
-              headers:{
-                'content-type':'application/text'
-              },
-              body:JSON.stringify({
-                phoneNumber,
-                oneTimePassword
-              })
-            });
-            if(loginResponse.status==200){//200 means the password was valid
-              const sessionToken = await loginResponse.text();//NEW LINE
-              await AsyncStorage.setItem('sessionToken', sessionToken)//NEW LINE (stores in storage)
-              setLoggedInState(loggedInStates.LOGGED_IN);
-            } else{
-              console.log('response status', loginResponse.status);//NEW LINE
-              Alert.alert('Invalid','Invalid login information')//NEW LINE
-              setLoggedInState(loggedInStates.NOT_LOGGED_IN)
+        onChangeText={setPhoneNumber}>
+      </TextInput> 
+      <Button
+      title='Send'
+        style={styles.button}
+        onPress={async()=>{
+          console.log('Button was pressed')
+          const textResponse=await fetch('https://dev.stedi.me/twofactorlogin/'+phoneNumber,
+          {
+            method:'POST',
+            headers:{
+              'content-type':'application/text'
             }
-          }}
-          />
-      </View>
-    )
-  }};
+          },
+          //Alert.alert("testing")
+          )
+          console.log("textresponse",textResponse.status)
+          setLoggedInState(loggedInStates.CODE_SENT)
+        }}
+        />
+    </View>)
+  }
+  else if (loggedInState == loggedInStates.CODE_SENT){
+return(
+  <View>
+    <TextInput style={styles.input}
+      placeholderTextColor='#211F0F'
+      placeholder="add code here"
+        value={passCode}
+        onChangeText={setPassCode}
+        keyboardType = "numeric">
+      </TextInput> 
+      <Button
+      title='Send again'
+        style={styles.button}
+        onPress={async()=>{
+          console.log('login Button was pressed')
+         const loginResponse=await fetch('https://dev.stedi.me/twofactorlogin', {
+            method:'POST',
+            headers:{
+              'content-type':'application/text'
+            },
+            body:JSON.stringify({
+              phoneNumber: phoneNumber,
+              oneTimePassword: passCode
+            })
+            });
+            if(loginResponse.status == 200){//200 means it worked
+              const sessionToken=await loginResponse.text();
+              console.log("session Token",sessionToken)
+              await AsyncStorage.setItem("sessionToken",sessionToken)//stores token
+              setLoggedInState(loggedInStates.LOGGED_IN);
+            }else{
+              console.log('response ststus', loginResponse.status);
+              Alert.alert('Invalid','Invalid login information')
+              setLoggedInState(loggedInStates.NOT_LOGGED_IN);
+            }
+           
+          
+        }}
+        />
+  </View>
+)
+  }
+  }
  export default App;
 
  const styles = StyleSheet.create({
   container:{
       flex:1, 
       alignItems:'center',
-      justifyContent: 'center'
+      justifyContent: 'center',
+      backgroundColor: "#F7DC07"
   },
   input: {
     height: 40,
-    marginTop: 100,
+    marginTop:100,
     margin: 12,
     borderWidth: 1,
     padding: 10,
@@ -140,8 +146,8 @@ return(
   },
   button: {
     alignItems: "center",
-    backgroundColor: "#DDDDDD",
-    padding: 10
+    backgroundColor: "#211F0F",
+    padding: 10,
+    
   }    
 })
-
